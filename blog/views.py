@@ -1,18 +1,15 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from django.views.generic.base import View
 from .models import Category, Post
+from datetime import datetime
 
-#def home(request):
-#    if request.method == 'POST':
-#        return HttpResponse('Hi')
-#    elif request.method == 'GET':
-#       return HttpResponse('Good')
+
 
 class HomeView(View):
     def get(self, request):
-        post_list = Post.objects.all()
-        return render(request, 'blog/home.html', {'post': post_list})
+        category_list = Category.objects.all()
+        post_list = Post.objects.filter(published_date__lte=datetime.now(), published=True)
+        return render(request, 'blog/post_list.html', {'categories': category_list, 'post_list': post_list})
 
 class CategoryView(View):
     '''Вывод статей категории'''
@@ -20,7 +17,9 @@ class CategoryView(View):
         category = Category.objects.get(slug=category_name)
         return render(request, 'blog/post_list.html', {'category': category})
 
-class PostView(View):
-    def get(self, reuest, post_name):
-        post_list = Post.objects.get(slug=post_name)
-        return render(reuest, 'blog/post_view.html', {'post': post_list})
+class PostDetailView(View):
+    '''Вывод полной статьи'''
+    def get(self, request, category, slug):
+        category_list = Category.objects.all()
+        post = Post.objects.get(slug=slug)
+        return render(request, 'blog/post_detail.html', {'categories': category_list, 'post': post})
